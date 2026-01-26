@@ -14,7 +14,6 @@ echo "Configuring keyboard layout to GB..."
 
 cat <<EOF >> ~/.config/hypr/hyprland.conf
 
-# Personal overrides
 input {
     kb_layout = gb
 }
