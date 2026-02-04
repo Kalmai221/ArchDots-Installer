@@ -40,5 +40,3 @@ This project demonstrates core competencies in:
 
 * **Portfolio:** [klhportfolio.vercel.app](https://www.google.com/search?q=https://klhportfolio.vercel.app)
 * **LinkedIn:** [In/kurtishopewell](https://www.google.com/search?q=https://www.linkedin.com/in/kurtishopewell/)
-
-```
