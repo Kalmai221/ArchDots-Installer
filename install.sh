@@ -18,29 +18,40 @@ input {
 }
 EOF
 
-# --- 4. WALLPAPER INTEGRATION ---
+# --- 4. WALLPAPER DOWNLOAD ---
 WP_URL="https://4kwallpapers.com/images/wallpapers/blue-abstract-3840x2160-25121.jpg"
 WP_DIR="$HOME/Pictures/Wallpapers"
 WP_PATH="$WP_DIR/blue-abstract.jpg"
-CONFIG_FILE="$HOME/.config/illogical-impulse/config.json"
 
 echo "Downloading wallpaper..."
 mkdir -p "$WP_DIR"
-
-# Use a browser User-Agent to prevent 403 Forbidden errors
+# Spoof browser to avoid 403 Forbidden
 curl -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" \
      "$WP_URL" -o "$WP_PATH"
 
-# Update the JSON config so the UI and colors match the new wallpaper
-if [ -f "$CONFIG_FILE" ]; then
-    echo "Updating dotfiles config..."
-    sed -i "s|\"wallpaperPath\": \".*\"|\"wallpaperPath\": \"$WP_PATH\"|" "$CONFIG_FILE"
+# --- 5. DEPLOY CONFIG FROM SUBFOLDER ---
+# Path to your local file: ./illogical-impulse/config.json
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_CONFIG="$SCRIPT_DIR/illogical-impulse/config.json"
+TARGET_DIR="$HOME/.config/illogical-impulse"
+
+if [ -f "$LOCAL_CONFIG" ]; then
+    echo "Applying custom config from $LOCAL_CONFIG..."
+    mkdir -p "$TARGET_DIR"
+    cp "$LOCAL_CONFIG" "$TARGET_DIR/config.json"
+    
+    # Update the JSON to use the new wallpaper path
+    sed -i "s|\"wallpaperPath\": \".*\"|\"wallpaperPath\": \"$WP_PATH\"|" "$TARGET_DIR/config.json"
+else
+    echo "⚠️ Error: config.json not found in $LOCAL_CONFIG"
 fi
 
-# Ensure swww-daemon is running and apply immediately
+# --- 6. APPLY VISUALLY ---
 if command -v swww >/dev/null; then
-    swww-daemon & sleep 1
+    pgrep -x "swww-daemon" >/dev/null || swww-daemon & 
+    sleep 1
+    echo "🖼️ Setting wallpaper..."
     swww img "$WP_PATH" --transition-type grow
 fi
 
-echo "Installation and wallpaper setup complete!"
+echo "✨ Done! Config deployed and wallpaper applied."
