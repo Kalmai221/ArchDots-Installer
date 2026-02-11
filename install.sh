@@ -30,7 +30,6 @@ curl -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
      "$WP_URL" -o "$WP_PATH"
 
 # --- 5. DEPLOY CONFIG FROM SUBFOLDER ---
-# Path to your local file: ./illogical-impulse/config.json
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_CONFIG="$SCRIPT_DIR/illogical-impulse/config.json"
 TARGET_DIR="$HOME/.config/illogical-impulse"
@@ -46,7 +45,32 @@ else
     echo "⚠️ Error: config.json not found in $LOCAL_CONFIG"
 fi
 
-# --- 6. APPLY VISUALLY ---
+# --- 6. SDDM SETUP & CONFIG REPLACEMENT ---
+echo "Installing SilentSDDM..."
+# Clone and install the theme
+git clone -b main --depth=1 https://github.com/uiriansan/SilentSDDM
+cd SilentSDDM || exit
+chmod +x install.sh
+sudo ./install.sh
+cd ..
+
+# Replace SDDM theme config with local sddm/default.conf
+LOCAL_SDDM_CONF="$SCRIPT_DIR/sddm/default.conf"
+TARGET_SDDM_CONF="/usr/share/sddm/themes/silent/configs/default.conf"
+
+if [ -f "$LOCAL_SDDM_CONF" ]; then
+    echo "Replacing SDDM theme config..."
+    sudo cp "$LOCAL_SDDM_CONF" "$TARGET_SDDM_CONF"
+else
+    echo "⚠️ Error: Local SDDM config not found at $LOCAL_SDDM_CONF"
+fi
+
+# Copy wallpaper to SDDM backgrounds folder
+echo "Setting SDDM background..."
+sudo mkdir -p /usr/share/sddm/themes/silent/backgrounds/
+sudo cp "$WP_PATH" /usr/share/sddm/themes/silent/backgrounds/
+
+# --- 7. APPLY VISUALLY ---
 if command -v swww >/dev/null; then
     pgrep -x "swww-daemon" >/dev/null || swww-daemon & 
     sleep 1
@@ -54,4 +78,4 @@ if command -v swww >/dev/null; then
     swww img "$WP_PATH" --transition-type grow
 fi
 
-echo "✨ Done! Config deployed and wallpaper applied."
+echo "✨ Done! System installed, Configs deployed, and SDDM updated."
