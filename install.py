@@ -24,7 +24,6 @@ def run_cmd(cmd, sudo=False, capture=True):
         if capture:
             subprocess.run(full_cmd, shell=True, check=True, capture_output=True, text=True, executable="/bin/bash")
         else:
-            # For interactive installers like the end-4 script
             subprocess.run(full_cmd, shell=True, check=True, executable="/bin/bash")
         return True
     except subprocess.CalledProcessError as e:
@@ -59,10 +58,23 @@ def download_wallpaper():
 def main():
     console.print(Panel.fit("[bold cyan]🚀 Modern Arch Dots Installer[/bold cyan]", border_style="blue", padding=(1, 2)))
 
-    # 1. System Prep
-    with console.status("[bold green]Updating system and installing Git...") as status:
-        run_cmd("pacman -Syu --noconfirm git", sudo=True)
-    console.print("✅ System updated.")
+    # 1. System Prep & Core Apps
+    with console.status("[bold green]Updating system and installing base-devel & btop...") as status:
+        run_cmd("pacman -Syu --noconfirm git base-devel btop code", sudo=True)
+    console.print("✅ Core system packages and [bold]btop/code[/bold] installed.")
+
+    # 1.5 AUR Helper (yay) and Edge
+    if not shutil.which("yay"):
+        console.print("[bold yellow]Installing yay (AUR Helper)...[/bold yellow]")
+        run_cmd("git clone https://aur.archlinux.org/yay.git")
+        os.chdir("yay")
+        run_cmd("makepkg -si --noconfirm")
+        os.chdir("..")
+        shutil.rmtree("yay")
+    
+    with console.status("[bold cyan]Installing Microsoft Edge via yay...") as status:
+        run_cmd("yay -S --noconfirm microsoft-edge-stable-bin")
+    console.print("✅ Microsoft Edge installed.")
 
     # 2. Hyprland Dots (Interactive)
     console.print("[bold yellow]Starting end-4 dotfiles installation...[/bold yellow]")
@@ -85,8 +97,8 @@ def main():
     if local_conf.exists():
         target_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy(local_conf, target_dir / "config.json")
-        # Inline path fix
         conf_file = target_dir / "config.json"
+        # Using a more robust replace for the home directory path if needed
         content = conf_file.read_text().replace('"/home/kalmai221/Downloads/blue-abstract-3840x2160-25121.jpg"', f'"{WP_PATH}"')
         conf_file.write_text(content)
         console.print("✅ illogical-impulse config deployed.")
