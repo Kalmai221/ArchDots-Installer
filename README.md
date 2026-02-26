@@ -20,7 +20,7 @@ It handles the initial system update, deploys the high-performance [end-4/dots-h
 > **Note:** Designed for fresh Arch Linux installations.
 
 ```bash
-curl -L https://raw.githubusercontent.com/Kalmai221/ArchDots-Installer/refs/heads/main/install.sh | bash
+curl -L https://raw.githubusercontent.com/Kalmai221/ArchDots-Installer/refs/heads/main/run.sh | bash
 
 ```
 
